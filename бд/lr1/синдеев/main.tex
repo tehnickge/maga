@@ -1,0 +1,103 @@
+\RequirePackage{fix-cm}
+\documentclass[report]{bmstu}
+% Кодировка и русский язык уже подключены в bmstu.cls — не дублируем!
+% Нумерация разделов без привязки к главам:
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+\begin{document}
+
+\include{definision}
+\include{title}% <-- преподаватель
+
+\newpage
+
+\section{Цель работы}
+Целью лабораторной работы является формирование следующей
+компетенции: студент должен получить навыки инсталляции СУБД
+PostgreSQL в среде ОС Ubuntu, протестировать её работу,
+разработать небольшую базу данных и выполнить запросы к ней.
+
+\section{Создание таблицы users}
+Создана последовательность \texttt{user\_ids} и таблица
+\texttt{users}:
+
+\begin{lstlisting}
+CREATE SEQUENCE user_ids;
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY DEFAULT nextval('user_ids'),
+    surname VARCHAR(64),
+    firstname VARCHAR(64)
+);
+\end{lstlisting}
+
+Добавлены записи:
+
+\begin{lstlisting}
+INSERT INTO users (surname, firstname) VALUES ('Иванов', 'Иван');
+INSERT INTO users (surname, firstname) VALUES ('Петров', 'Пётр');
+\end{lstlisting}
+
+Выполнен поиск:
+
+\begin{lstlisting}
+SELECT * FROM users;
+SELECT * FROM users WHERE surname='Иванов';
+\end{lstlisting}
+
+Результат представлен на рисунке~\ref{fig:query}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.6\textwidth]{img/результат_запроса.png}
+  \caption{Результат запроса}
+  \label{fig:query}
+\end{figure}
+
+\section{Вариант 2. Сервис «Рекламные кампании»}
+
+\subsection{Схема базы данных}
+
+Схема базы данных представлена на рисунке~\ref{fig:schema}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.8\textwidth]{img/схема_бд.png}
+  \caption{Схема базы данных}
+  \label{fig:schema}
+\end{figure}
+
+\subsection{Запрос}
+\begin{lstlisting}
+SELECT DISTINCT
+		s.url,
+		c.name AS campaign_name
+FROM campaigns c
+	JOIN sites s
+		ON s.campaign_id = c.id
+	JOIN banners b
+		ON b.site_id = s.id
+	AND s.campaign_id = c.id
+	JOIN products p
+		ON b.product_id = p.id
+	WHERE p.description ILIKE '%автомобил%';
+
+\end{lstlisting}
+
+Результат представлен на рисунке~\ref{fig:result}.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{img/результат_запроса2.png}
+  \caption{Результат запроса}
+  \label{fig:result}
+\end{figure}
+
+\section{Вывод}
+	В ходе лабораторной работы были получены навыки установки СУБД
+PostgreSQL в ОС Ubuntu, проверки её работоспособности, разработки
+базы данных и выполнения запросов. Разработана база данных для
+сервиса «кошелёк», включающая таблицы users, wallets, operations
+и operation\_types. Выполнен запрос с соединением четырёх таблиц
+и фильтрацией по нескольким условиям.
+
+\end{document}
