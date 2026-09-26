@@ -1,10 +1,32 @@
 \RequirePackage{fix-cm}
-\documentclass[report]{bmstu}
-% Кодировка и русский язык уже подключены в bmstu.cls — не дублируем!
-% Нумерация разделов без привязки к главам:
+\documentclass{bmstu-sob}
+% ------------------------------------------------------------
+% Латиница
+% ------------------------------------------------------------
+% bmstu-sob использует XeLaTeX/LuaLaTeX и сам настраивает
+% основной шрифт. Поэтому fontspec здесь повторно не подключаем.
+%
+% Латинские идентификаторы SQL:
+% users, wallets, operations, operation_types
+% поддерживаются непосредственно.
+
+% ------------------------------------------------------------
+% Нумерация разделов без привязки к главам
+% ------------------------------------------------------------
 \renewcommand{\thesection}{\arabic{section}}
 \renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+
+% ------------------------------------------------------------
+% Документ
+% ------------------------------------------------------------
 \begin{document}
+% ------------------------------------------------------------
+% Титульный лист
+% ------------------------------------------------------------
+\include{title.tex}
+% ============================================================
+% 1. ЦЕЛЬ РАБОТЫ
+% ============================================================
 
 \include{definision}
 \include{title}% <-- преподаватель
@@ -66,21 +88,60 @@ SELECT * FROM users WHERE surname='Иванов';
   \label{fig:schema}
 \end{figure}
 
+\subsection{Создание таблиц}
+\begin{lstlisting}
+-- 1. Таблица Рекламодатели
+CREATE TABLE advertisers (
+id INTEGER PRIMARY KEY DEFAULT nextval('advertisers_id_seq'),
+name VARCHAR(128) NOT NULL
+);
+
+
+
+-- 2. Таблица Товары
+CREATE TABLE products (
+id INTEGER PRIMARY KEY DEFAULT nextval('products_id_seq'),
+advertiser_id INTEGER REFERENCES advertisers(id),
+name VARCHAR(128),
+description TEXT
+);
+
+
+
+-- 3. Таблица Кампании
+CREATE TABLE campaigns (
+id INTEGER PRIMARY KEY DEFAULT nextval('campaigns_id_seq'),
+name VARCHAR(128) NOT NULL
+);
+
+
+
+-- 4. Таблица Сайты
+CREATE TABLE sites (
+id INTEGER PRIMARY KEY DEFAULT nextval('sites_id_seq'),
+url VARCHAR(255) NOT NULL
+);
+
+
+
+-- 5. Таблица Баннеры (Связующая)
+CREATE TABLE banners (
+id INTEGER PRIMARY KEY DEFAULT nextval('banners_id_seq'),
+product_id INTEGER REFERENCES products(id),
+campaign_id INTEGER REFERENCES campaigns(id),
+site_id INTEGER REFERENCES sites(id),
+banner_text TEXT
+);
+\end{lstlisting}
+
 \subsection{Запрос}
 \begin{lstlisting}
-SELECT DISTINCT
-		s.url,
-		c.name AS campaign_name
-FROM campaigns c
-	JOIN sites s
-		ON s.campaign_id = c.id
-	JOIN banners b
-		ON b.site_id = s.id
-	AND s.campaign_id = c.id
-	JOIN products p
-		ON b.product_id = p.id
-	WHERE p.description ILIKE '%автомобил%';
-
+SELECT DISTINCT s.url, c.name AS campaign_name
+FROM banners b
+JOIN products p ON b.product_id = p.id
+JOIN campaigns c ON b.campaign_id = c.id
+JOIN sites s ON b.site_id = s.id
+WHERE p.description ILIKE '%автомобил%';
 \end{lstlisting}
 
 Результат представлен на рисунке~\ref{fig:result}.

@@ -1,0 +1,24 @@
+PWD c:/Users/Tehnick/Documents/Git/maga/бд/lr2
+INPUT f:/Program Files (x86)/texlive/2026/texmf.cnf
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/web2c/texmf.cnf
+INPUT f:/Program Files (x86)/texlive/2026/texmf-var/web2c/pdftex/pdflatex.fmt
+INPUT c:/Users/Tehnick/Documents/Git/maga/бд/lr2/main.tex
+OUTPUT main.log
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/base/fix-cm.sty
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/base/fix-cm.sty
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/base/ts1enc.def
+INPUT f:/Program Files (x86)/texlive/texmf-local/tex/latex/bmstu-sob/bmstu-sob.cls
+INPUT f:/Program Files (x86)/texlive/texmf-local/tex/latex/bmstu-sob/bmstu-sob.cls
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/tex/generic/iftex/iftex.sty
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/tex/generic/iftex/iftex.sty
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/extsizes/extarticle.cls
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/extsizes/extarticle.cls
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/extsizes/size14.clo
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/extsizes/size14.clo
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/extsizes/size14.clo
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/fonts/map/fontname/texfonts.map
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/fonts/tfm/public/cm/cmr12.tfm
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/base/exscale.sty
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/base/exscale.sty
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/fontspec/fontspec.sty
+INPUT f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/fontspec/fontspec.sty

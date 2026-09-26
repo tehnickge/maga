@@ -1,0 +1,24 @@
+# Fdb version 4
+["pdflatex"] 1790432180.28034 "c:/Users/Tehnick/Documents/Git/maga/бд/lr2/main.tex" "main.pdf" "main" 1790432180.74888 2
+  "c:/Users/Tehnick/Documents/Git/maga/бд/lr2/main.tex" 1790431180 24092 f207862750c083f61ad77bc2ae0320b5 ""
+  "f:/Program Files (x86)/texlive/2026/texmf-dist/fonts/map/fontname/texfonts.map" 1789983223 3524 cb3e574dea2d1052e39280babc910dc8 ""
+  "f:/Program Files (x86)/texlive/2026/texmf-dist/fonts/tfm/public/cm/cmr12.tfm" 1789982203 1288 655e228510b4c2a1abe905c368440826 ""
+  "f:/Program Files (x86)/texlive/2026/texmf-dist/tex/generic/iftex/iftex.sty" 1789983725 7984 7dbb9280f03c0a315425f1b4f35d43ee ""
+  "f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/base/exscale.sty" 1789984040 2622 c8e1821f47cbe297ec723ed1c87284bb ""
+  "f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/base/fix-cm.sty" 1789984040 14741 c98e7b17e5d21add6fe391ecf7760402 ""
+  "f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/base/ts1enc.def" 1789984040 8090 fa597a743f7dbb94957d22917c37c276 ""
+  "f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/extsizes/extarticle.cls" 1789983031 20602 3112294ba237d94ce4a1502cfef3594f ""
+  "f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/extsizes/size14.clo" 1789983031 6214 cc6d832fdd2fc5f4a20ee1a002f45d0f ""
+  "f:/Program Files (x86)/texlive/2026/texmf-dist/tex/latex/fontspec/fontspec.sty" 1789983236 3780 7d1bbe8ee1fc87beadab5999d0471011 ""
+  "f:/Program Files (x86)/texlive/2026/texmf-dist/web2c/texmf.cnf" 1789981282 43815 bcd8835056a2dfac260166a1c9541261 ""
+  "f:/Program Files (x86)/texlive/2026/texmf-var/web2c/pdftex/pdflatex.fmt" 1789987179 3658669 e5761ca150652f25daf7f8d133a016fd ""
+  "f:/Program Files (x86)/texlive/2026/texmf.cnf" 1789987095 713 e69b156964470283e0530f5060668171 ""
+  "f:/Program Files (x86)/texlive/texmf-local/tex/latex/bmstu-sob/bmstu-sob.cls" 1790010283 2617 dbceeb2d8f68d5b06392da371f741042 ""
+  "main.aux" 1790432180 4822 8c6f82e880b8a0b876dbd3eca2cfb44e "pdflatex"
+  "main.tex" 1790431180 24092 f207862750c083f61ad77bc2ae0320b5 ""
+  "titlesob.aux" 1790432179 1019 66bcf24e2ea5e69ae6d1a6ff522753d9 ""
+  (generated)
+  "main.aux"
+  "main.log"
+  "main.pdf"
+  (rewritten before read)
