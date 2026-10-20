@@ -1,0 +1,141 @@
+\documentclass[utf8, 12pt]{bmstu-report}
+
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{booktabs}
+
+% Настройка подсветки кода SQL
+\lstset{
+	language=SQL,
+	basicstyle=\small\ttfamily,
+	keywordstyle=\color{blue}\bfseries,
+	commentstyle=\color{gray},
+	stringstyle=\color{teal},
+	numbers=left,
+	numberstyle=\tiny\color{gray},
+	stepnumber=1,
+	numbersep=5pt,
+	frame=single,
+	breaklines=true,
+	captionpos=b,
+	keepspaces=true
+}
+
+\author{И. И. Иванов}
+\group{ИУ7-51B}
+\title{Лабораторная работа № 3}
+\subtitle{Запросы PostgreSQL}
+\teacher{Ю. А. Григорьев}
+\department{ИУ7 "Программное обеспечение ЭВМ и информационные технологии"}
+
+\begin{document}
+	
+	\maketitle
+	
+	\tableofcontents
+	\newpage
+	
+	\section{Цель работы}
+	Целью лабораторной работы является формирование навыков разработки сложных SQL-запросов SELECT с использованием соединений таблиц, агрегатных функций, группировки, оконных функций и подзапросов в СУБД PostgreSQL.
+	
+	\section{Выполнение контрольных заданий}
+	
+	\subsection{Задание 1. Правила обработки пробелов в операторе LIKE}
+	Было произведено сравнение следующих запросов:
+	\begin{lstlisting}
+		SELECT count(*) FROM tickets;
+		SELECT count(*) FROM tickets WHERE passenger_name LIKE '% %';
+		SELECT count(*) FROM tickets WHERE passenger_name LIKE '% % %';
+		SELECT count(*) FROM tickets WHERE passenger_name LIKE '% %%';
+	\end{lstlisting}
+	
+	\textbf{Пояснение:} 
+	Символ \texttt{\%} в операторе \texttt{LIKE} обозначает любую последовательность символов, включая пустую. В связи с этим шаблон \texttt{'\% \%\%'} полностью эквивалентен \texttt{'\% \%'}. Шаблон \texttt{'\% \% \%'} ищет строки, содержащие минимум два пробела.
+	
+	\subsection{Задание 2. Выбор пассажиров с фамилией из 5 букв}
+	Запрос для поиска пассажиров, у которых фамилия состоит из 5 букв:
+	\begin{lstlisting}
+		SELECT passenger_name
+		FROM tickets
+		WHERE passenger_name LIKE '% _____';
+	\end{lstlisting}
+	
+	\subsection{Задание 6. Маршруты на самолетах Boeing}
+	Запрос для поиска маршрутов, обслуживаемых самолетами Boeing, с выводом наименования модели:
+	\begin{lstlisting}
+		SELECT DISTINCT
+		r.departure_city,
+		r.arrival_city,
+		a.model
+		FROM routes r
+		JOIN aircrafts a ON r.aircraft_code = a.aircraft_code
+		WHERE a.model LIKE 'Boeing%';
+	\end{lstlisting}
+	
+	\subsection{Задание 7. Города, между которыми летают Boeing 777-300}
+	Запрос для вывода уникальных пар городов:
+	\begin{lstlisting}
+		SELECT DISTINCT
+		LEAST(r.departure_city, r.arrival_city) AS city1,
+		GREATEST(r.departure_city, r.arrival_city) AS city2
+		FROM routes r
+		JOIN aircrafts a ON r.aircraft_code = a.aircraft_code
+		WHERE a.model = 'Boeing 777-300';
+	\end{lstlisting}
+	
+	\subsection{Задание 8. Количество рейсов из Москвы в Санкт-Петербург}
+	\begin{lstlisting}
+		SELECT departure_city, arrival_city, count(*) AS count
+		FROM routes
+		WHERE departure_city = 'Москва' AND arrival_city = 'Санкт-Петербург'
+		GROUP BY departure_city, arrival_city;
+	\end{lstlisting}
+	
+	\subsection{Задание 10. Количество направлений из каждого города}
+	\begin{lstlisting}
+		SELECT departure_city, count(DISTINCT arrival_city) AS num_directions
+		FROM routes
+		GROUP BY departure_city
+		ORDER BY num_directions DESC;
+	\end{lstlisting}
+	
+	\subsection{Задание 11. Топ-5 городов по числу ежедневных рейсов из Москвы}
+	\begin{lstlisting}
+		SELECT arrival_city, count(*) AS daily_routes_count
+		FROM routes
+		WHERE departure_city = 'Москва' 
+		AND array_length(days_of_week, 1) = 7
+		GROUP BY arrival_city
+		ORDER BY daily_routes_count DESC
+		LIMIT 5;
+	\end{lstlisting}
+	
+	\subsection{Задание 12*. Число рейсов из Москвы по дням недели}
+	\begin{lstlisting}
+		SELECT 
+		unnested_day AS day_of_week,
+		count(*) AS flights_count
+		FROM routes,
+		unnest(days_of_week) AS unnested_day
+		WHERE departure_city = 'Москва'
+		GROUP BY unnested_day
+		ORDER BY unnested_day;
+	\end{lstlisting}
+	
+	\subsection{Задание 13. Максимальные и минимальные цены билетов}
+	\begin{lstlisting}
+		SELECT 
+		f.departure_city,
+		f.arrival_city,
+		max(tf.amount) AS max_price,
+		min(tf.amount) AS min_price
+		FROM flights_v f
+		JOIN ticket_flights tf ON f.flight_id = tf.flight_id
+		GROUP BY f.departure_city, f.arrival_city
+		ORDER BY f.departure_city, f.arrival_city;
+	\end{lstlisting}
+	
+	\section{Выводы}
+	В ходе выполнения лабораторной работы были освоены механизмы составления сложных SQL-запросов SELECT в СУБД PostgreSQL, научились применять различные типы соединений (JOIN), агрегатные функции, условные конструкции, работу с массивами и представление данных.
+	
+\end{document}
