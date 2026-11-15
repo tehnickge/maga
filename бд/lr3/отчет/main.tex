@@ -1,106 +1,859 @@
-\documentclass[utf8, 12pt]{bmstu-report}
+\RequirePackage{fix-cm}
+\documentclass{bmstu-sob}
 
-\usepackage{listings}
-\usepackage{xcolor}
-\usepackage{booktabs}
-
-% Настройка подсветки кода SQL
-\lstset{
-	language=SQL,
-	basicstyle=\small\ttfamily,
-	keywordstyle=\color{blue}\bfseries,
-	commentstyle=\color{gray},
-	stringstyle=\color{teal},
-	numbers=left,
-	numberstyle=\tiny\color{gray},
-	stepnumber=1,
-	numbersep=5pt,
-	frame=single,
-	breaklines=true,
-	captionpos=b,
-	keepspaces=true
-}
-
-\author{И. И. Иванов}
-\group{ИУ7-51B}
-\title{Лабораторная работа № 3}
-\subtitle{Запросы PostgreSQL}
-\teacher{Ю. А. Григорьев}
-\department{ИУ7 "Программное обеспечение ЭВМ и информационные технологии"}
+% ------------------------------------------------------------
+% Настройка нумерации разделов
+% ------------------------------------------------------------
+\renewcommand{\thesection}{\arabic{section}}
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}
 
 \begin{document}
 	
-	\maketitle
+	% Подключение титульного листа
+	\include{title.tex}
 	
-	\tableofcontents
-	\newpage
-	
+	% ============================================================
+	% 1. ЦЕЛЬ РАБОТЫ
+	% ============================================================
 	\section{Цель работы}
-	Целью лабораторной работы является формирование навыков разработки сложных SQL-запросов SELECT с использованием соединений таблиц, агрегатных функций, группировки, оконных функций и подзапросов в СУБД PostgreSQL.
 	
-	\section{Выполнение контрольных заданий}
+	Целью лабораторной работы является формирование навыков разработки сложных SQL-запросов команды \texttt{SELECT} в СУБД PostgreSQL: использование шаблонов и регулярных выражений, соединений таблиц, агрегирования и группировки, оконных функций, подзапросов и общих табличных выражений (CTE).
 	
-	\subsection{Задание 1. Правила обработки пробелов в операторе LIKE}
-	Было произведено сравнение следующих запросов:
-	\begin{lstlisting}
-		SELECT count(*) FROM tickets;
-		SELECT count(*) FROM tickets WHERE passenger_name LIKE '% %';
-		SELECT count(*) FROM tickets WHERE passenger_name LIKE '% % %';
-		SELECT count(*) FROM tickets WHERE passenger_name LIKE '% %%';
+	% ============================================================
+	% 2. ЗАПРОСЫ ИЗ МЕТОДИЧЕСКИХ УКАЗАНИЙ (РАЗДЕЛ 3)
+	% ============================================================
+	\section{Запросы из теоретической части лабораторной работы}
+	
+	Перед выполнением запросов было произведено переключение на схему базы данных:
+	\begin{lstlisting}[language=SQL]
+		SET search_path TO bookings;
 	\end{lstlisting}
 	
-	\textbf{Пояснение:} 
-	Символ \texttt{\%} в операторе \texttt{LIKE} обозначает любую последовательность символов, включая пустую. В связи с этим шаблон \texttt{'\% \%\%'} полностью эквивалентен \texttt{'\% \%'}. Шаблон \texttt{'\% \% \%'} ищет строки, содержащие минимум два пробела.
+	% ------------------------------------------------------------
+	\subsection{Дополнительные возможности команды SELECT}
 	
-	\subsection{Задание 2. Выбор пассажиров с фамилией из 5 букв}
-	Запрос для поиска пассажиров, у которых фамилия состоит из 5 букв:
+	\subsubsection{Просмотр базовых таблиц}
+	Запрос:
+	\begin{lstlisting}[language=SQL]
+		SELECT * FROM aircrafts;
+	\end{lstlisting}
+	Результат выполнения:
 	\begin{lstlisting}
+	773	Боинг 777-300	11100
+	763	Боинг 767-300	7900
+	SU9	Сухой Суперджет-100	3000
+	320	Аэробус A320-200	5700
+	321	Аэробус A321-200	5600
+	319	Аэробус A319-100	6700
+	733	Боинг 737-300	4200
+	CN1	Сессна 208 Караван	1200
+	
+	\end{lstlisting}
+	
+	Запрос:
+	\begin{lstlisting}[language=SQL]
+		SELECT * FROM airports;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	YKS	Якутск	Якутск	(129.77099609375,62.093299865722656)	Asia/Yakutsk
+	MJZ	Мирный	Мирный	(114.03900146484375,62.534698486328125)	Asia/Yakutsk
+	KHV	Хабаровск-Новый	Хабаровск	(135.18800354004,48.52799987793)	Asia/Vladivostok
+	PKC	Елизово	Петропавловск-Камчатский	(158.45399475097656,53.16790008544922)	Asia/Kamchatka
+	UUS	Хомутово	Южно-Сахалинск	(142.71800231933594,46.88869857788086)	Asia/Sakhalin
+	VVO	Владивосток	Владивосток	(132.1479949951172,43.39899826049805)	Asia/Vladivostok
+	LED	Пулково	Санкт-Петербург	(30.262500762939453,59.80030059814453)	Europe/Moscow
+	KGD	Храброво	Калининград	(20.592599868774414,54.88999938964844)	Europe/Kaliningrad
+	
+	\end{lstlisting}
+	
+	\subsubsection{Шаблонный поиск оператором LIKE}
+	Выбор всех самолетов компании Airbus:
+	\begin{lstlisting}[language=SQL]
+		SELECT * FROM aircrafts WHERE model LIKE 'Airbus%';
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+		 пустой вывод
+	\end{lstlisting}
+	
+	Поиск аэропортов с названиями длиной в три символа:
+	\begin{lstlisting}[language=SQL]
+		SELECT * FROM airports WHERE airport_name LIKE '___';
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	UFA	Уфа	Уфа	(55.874401092529,54.557498931885)	Asia/Yekaterinburg
+	\end{lstlisting}
+	
+	\subsubsection{Регулярные выражения POSIX}
+	Выборка моделей, начинающихся на «A» или «Boe»:
+	\begin{lstlisting}[language=SQL]
+		SELECT * FROM aircrafts WHERE model ~ '^(A|Boe)';
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+		пустой вывод
+	\end{lstlisting}
+	Выборка моделей, не завершающихся числом 300:
+	
+	\begin{lstlisting}[language=SQL]
+		SELECT * FROM aircrafts WHERE model !~ '300$';
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	SU9	Сухой Суперджет-100	3000
+	320	Аэробус A320-200	5700
+	321	Аэробус A321-200	5600
+	319	Аэробус A319-100	6700
+	CN1	Сессна 208 Караван	1200
+	CR2	Бомбардье CRJ-200	2700
+	
+	\end{lstlisting}
+	
+	\subsubsection{Предикат BETWEEN и вычисляемые столбцы}
+	Выбор самолетов с дальностью от 3000 до 6000 км:
+	\begin{lstlisting}[language=SQL]
+		SELECT * FROM aircrafts WHERE range BETWEEN 3000 AND 6000;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	
+	SU9	Сухой Суперджет-100	3000
+	320	Аэробус A320-200	5700
+	321	Аэробус A321-200	5600
+	733	Боинг 737-300	4200
+	
+	\end{lstlisting}
+	
+	Вычисление дальности в милях с округлением:
+	\begin{lstlisting}[language=SQL]
+		SELECT model, range, round( range / 1.609, 2 ) AS miles FROM aircrafts;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	Боинг 777-300	11100	6898.69
+	Боинг 767-300	7900	4909.88
+	Сухой Суперджет-100	3000	1864.51
+	Аэробус A320-200	5700	3542.57
+	Аэробус A321-200	5600	3480.42
+	Аэробус A319-100	6700	4164.08
+	Боинг 737-300	4200	2610.32
+	
+	
+	\end{lstlisting}
+	
+	\subsubsection{Сортировка и выбор уникальных значений}
+	Сортировка по убыванию дальности полета:
+	\begin{lstlisting}[language=SQL]
+		SELECT * FROM aircrafts ORDER BY range DESC;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	773	Боинг 777-300	11100
+	763	Боинг 767-300	7900
+	319	Аэробус A319-100	6700
+	320	Аэробус A320-200	5700
+	321	Аэробус A321-200	5600
+	733	Боинг 737-300	4200
+	SU9	Сухой Суперджет-100	3000
+	
+	\end{lstlisting}
+	
+	Выборка уникальных часовых поясов:
+	\begin{lstlisting}[language=SQL]
+		SELECT DISTINCT timezone FROM airports ORDER BY 1;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	Asia/Anadyr
+	Asia/Chita
+	Asia/Irkutsk
+	Asia/Kamchatka
+	Asia/Krasnoyarsk
+	Asia/Magadan
+	Asia/Novokuznetsk
+	Asia/Novosibirsk
+	Asia/Omsk
+	Asia/Sakhalin
+	Asia/Vladivostok
+	Asia/Yakutsk
+	Asia/Yekaterinburg
+	Europe/Kaliningrad
+	Europe/Moscow
+	Europe/Samara
+	Europe/Volgograd
+	\end{lstlisting}
+	
+	\subsubsection{Ограничение выборки (LIMIT и OFFSET)}
+	Три самых восточных аэропорта:
+	\begin{lstlisting}[language=SQL]
+	SELECT airport_name, city, coordinates[0] as longitude FROM airports ORDER BY longitude DESC LIMIT 3;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	Анадырь	Анадырь	177.74099731445312
+	Елизово	Петропавловск-Камчатский	158.45399475097656
+	Магадан	Магадан	150.72000122070312
+	
+	\end{lstlisting}
+	
+	Следующие три аэропорта (с 4-го по 6-е место):
+	\begin{lstlisting}[language=SQL]
+	SELECT airport_name, city, coordinates[0] as longitude
+	FROM airports
+	ORDER BY longitude DESC
+	LIMIT 3
+	OFFSET 3;
+	
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+		Хомутово	Южно-Сахалинск	142.71800231933594
+		Хурба	Комсомольск-на-Амуре	136.9340057373047
+		Хабаровск-Новый	Хабаровск	135.18800354004
+		
+	\end{lstlisting}
+	
+	\subsubsection{Условные выражения CASE}
+	Классификация самолетов по дальности полета:
+	\begin{lstlisting}[language=SQL]
+		SELECT model, range,
+		CASE WHEN range < 2000 THEN 'Ближнемагистральный'
+		WHEN range < 5000 THEN 'Среднемагистральный'
+		ELSE 'Дальнемагистральный'
+		END AS type
+		FROM aircrafts
+		ORDER BY model;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	Аэробус A319-100	6700	Дальнемагистральный
+	Аэробус A320-200	5700	Дальнемагистральный
+	Аэробус A321-200	5600	Дальнемагистральный
+	Боинг 737-300	4200	Среднемагистральный
+	Боинг 767-300	7900	Дальнемагистральный
+	Боинг 777-300	11100	Дальнемагистральный
+	Бомбардье CRJ-200	2700	Среднемагистральный
+	
+	\end{lstlisting}
+	
+	% ------------------------------------------------------------
+	\subsection{Соединения (JOIN)}
+	
+	\subsubsection{Внутреннее соединение (JOIN)}
+	Компоновка салона самолета Cessna 208 Caravan:
+	\begin{lstlisting}[language=SQL]
+		SELECT a.aircraft_code, a.model, s.seat_no, s.fare_conditions
+		FROM seats AS s
+		JOIN aircrafts AS a ON s.aircraft_code = a.aircraft_code
+		WHERE a.model ~ '^Cessna'
+		ORDER BY s.seat_no;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	пустой вывод
+	\end{lstlisting}
+	
+	\subsubsection{Соединение таблицы с самой собой (Создание flights\_v)}
+	\begin{lstlisting}[language=SQL]
+		CREATE OR REPLACE VIEW flights_v AS
+		SELECT f.flight_id,
+		f.flight_no,
+		f.scheduled_departure,
+		timezone( dep.timezone, f.scheduled_departure ) AS scheduled_departure_local,
+		f.scheduled_arrival,
+		timezone( arr.timezone, f.scheduled_arrival ) AS scheduled_arrival_local,
+		f.scheduled_arrival - f.scheduled_departure AS scheduled_duration,
+		f.departure_airport,
+		dep.airport_name AS departure_airport_name,
+		dep.city AS departure_city,
+		f.arrival_airport,
+		arr.airport_name AS arrival_airport_name,
+		arr.city AS arrival_city,
+		f.status,
+		f.aircraft_code,
+		f.actual_departure,
+		timezone( dep.timezone, f.actual_departure ) AS actual_departure_local,
+		f.actual_arrival,
+		timezone( arr.timezone, f.actual_arrival ) AS actual_arrival_local,
+		f.actual_arrival - f.actual_departure AS actual_duration
+		FROM flights f,
+		airports dep,
+		airports arr
+		WHERE f.departure_airport = dep.airport_code
+		AND f.arrival_airport = arr.airport_code;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	создание view
+	\end{lstlisting}
+	
+	\subsubsection{Подсчет маршрутов по типам самолетов (INNER JOIN)}
+	\begin{lstlisting}[language=SQL]
+		SELECT r.aircraft_code, a.model, count( * ) AS num_routes
+		FROM routes r
+		JOIN aircrafts a ON r.aircraft_code = a.aircraft_code
+		GROUP BY 1, 2
+		ORDER BY 3 DESC;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	CR2
+	Бомбардье CRJ-200
+	232
+	\end{lstlisting}
+	
+	\subsubsection{Левое внешнее соединение (LEFT OUTER JOIN)}
+	Выявление самолета, не участвующего в рейсах:
+	\begin{lstlisting}[language=SQL]
+		SELECT a.aircraft_code AS a_code, a.model, r.aircraft_code AS r_code,
+		count( r.aircraft_code ) AS num_routes
+		FROM aircrafts a
+		LEFT OUTER JOIN routes r ON r.aircraft_code = a.aircraft_code
+		GROUP BY 1, 2, 3
+		ORDER BY 4 DESC;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	CR2
+	Бомбардье CRJ-200
+	CR2
+	232
+	
+	\end{lstlisting}
+	
+	\subsubsection{Многотабличный запрос: пассажиры без посадочных талонов}
+	\begin{lstlisting}[language=SQL]
+		SELECT count( * )
+		FROM ( ticket_flights t
+		JOIN flights f ON t.flight_id = f.flight_id
+		)
+		LEFT OUTER JOIN boarding_passes b
+		ON t.ticket_no = b.ticket_no AND t.flight_id = b.flight_id
+		WHERE f.actual_departure IS NOT NULL AND b.flight_id IS NULL;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	0
+	\end{lstlisting}
+	
+	\subsubsection{Операции над множествами (UNION)}
+	Города вылета из Москвы или Санкт-Петербурга:
+	\begin{lstlisting}[language=SQL]
+		SELECT arrival_city FROM routes
+		WHERE departure_city = 'Москва'
+		UNION
+		SELECT arrival_city FROM routes
+		WHERE departure_city = 'Санкт-Петербург'
+		ORDER BY arrival_city;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+		Абакан
+	\end{lstlisting}
+	
+	% ------------------------------------------------------------
+	\subsection{Агрегирование и группировка}
+	
+	\subsubsection{Базовые агрегатные функции}
+	Средняя стоимость бронирования:
+	\begin{lstlisting}[language=SQL]
+		SELECT avg( total_amount ) FROM bookings;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	79025.605811528685
+	\end{lstlisting}
+	
+	Количество маршрутов из Москвы по городам назначения:
+	\begin{lstlisting}[language=SQL]
+		SELECT arrival_city, count( * )
+		FROM routes
+		WHERE departure_city = 'Москва'
+		GROUP BY arrival_city
+		ORDER BY count DESC;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	Санкт-Петербург
+	12
+	
+	\end{lstlisting}
+	
+	Количество рейсов в зависимости от частоты выполнения в неделю:
+	\begin{lstlisting}[language=SQL]
+		SELECT array_length( days_of_week, 1 ) AS days_per_week,
+		count( * ) AS num_routes
+		FROM routes
+		GROUP BY days_per_week
+		ORDER BY 1 desc;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+		7
+		482
+	\end{lstlisting}
+	
+	\subsubsection{Фильтрация групп предложением HAVING}
+	Города, из которых существует не менее 15 маршрутов:
+	\begin{lstlisting}[language=SQL]
+		SELECT departure_city, count( * )
+		FROM routes
+		GROUP BY departure_city
+		HAVING count( * ) >= 15
+		ORDER BY count DESC;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	Москва
+	154
+	
+	\end{lstlisting}
+	
+	\subsubsection{Оконные функции}
+	Накопленный показатель проданных билетов в пределах месяца:
+	\begin{lstlisting}[language=SQL]
+		SELECT b.book_ref,
+		b.book_date,
+		extract( 'month' from b.book_date ) AS month,
+		extract( 'day' from b.book_date ) AS day,
+		count( * ) OVER (
+		PARTITION BY date_trunc( 'month', b.book_date )
+		ORDER BY b.book_date
+		) AS count
+		FROM ticket_flights tf
+		JOIN tickets t ON tf.ticket_no = t.ticket_no
+		JOIN bookings b ON t.book_ref = b.book_ref
+		WHERE tf.flight_id = 1
+		ORDER BY b.book_date;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+		A60039
+		2017-06-24 08:02:00.000 +0300
+		6
+		24
+		1
+	\end{lstlisting}
+	
+	% ------------------------------------------------------------
+	\subsection{Подзапросы}
+	
+	\subsubsection{Подзапрос в условии WHERE}
+	Бронирования с суммой выше средней:
+	\begin{lstlisting}[language=SQL]
+		SELECT count( * ) FROM bookings
+		WHERE total_amount >
+		( SELECT avg( total_amount ) FROM bookings );
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	87224
+	\end{lstlisting}
+	
+	Маршруты между городами часового пояса Asia/Krasnoyarsk:
+	\begin{lstlisting}[language=SQL]
+		SELECT flight_no, departure_city, arrival_city
+		FROM routes
+		WHERE departure_city IN (
+		SELECT city FROM airports WHERE timezone ~ 'Krasnoyarsk'
+		)
+		AND arrival_city IN (
+		SELECT city FROM airports WHERE timezone ~ 'Krasnoyarsk'
+		);
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	PG0070	Абакан	Томск
+	PG0071	Томск	Абакан
+	PG0313	Абакан	Кызыл
+	PG0314	Кызыл	Абакан
+	PG0653	Красноярск	Барнаул
+	PG0654	Барнаул	Красноярск
+	
+	\end{lstlisting}
+	
+	\subsubsection{Предикат NOT EXISTS}
+	Города, в которые нет рейсов из Москвы:
+	\begin{lstlisting}[language=SQL]
+		SELECT DISTINCT a.city
+		FROM airports a
+		WHERE NOT EXISTS (
+		SELECT * FROM routes r
+		WHERE r.departure_city = 'Москва'
+		AND r.arrival_city = a.city
+		)
+		AND a.city <> 'Москва'
+		ORDER BY city;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	Благовещенск
+	Иваново
+	Иркутск
+	Калуга
+	Когалым
+	Комсомольск-на-Амуре
+	Кызыл
+	\end{lstlisting}
+	
+	\subsubsection{Подзапрос во FROM и HAVING}
+	Города с несколькими аэропортами:
+	\begin{lstlisting}[language=SQL]
+		SELECT aa.city, aa.airport_code, aa.airport_name
+		FROM (
+		SELECT city, count( * )
+		FROM airports
+		GROUP BY city
+		HAVING count( * ) > 1
+		) AS a
+		JOIN airports AS aa ON a.city = aa.city
+		ORDER BY aa.city, aa.airport_name;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	Москва	VKO	Внуково
+	Москва	DME	Домодедово
+	Москва	SVO	Шереметьево
+	Ульяновск	ULV	Баратаевка
+	Ульяновск	ULY	Ульяновск-Восточный
+	
+	\end{lstlisting}
+	
+	Маршруты из аэропортов восточнее 150 градусов долготы:
+	\begin{lstlisting}[language=SQL]
+		SELECT departure_airport, departure_city, count( * )
+		FROM routes
+		GROUP BY departure_airport, departure_city
+		HAVING departure_airport IN (
+		SELECT airport_code FROM airports WHERE longitude > 150
+		)
+		ORDER BY count DESC;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+		DYR	Анадырь	4
+		GDX	Магадан	3
+		PKC	Петропавловск-Камчатский	1
+		
+	\end{lstlisting}
+	
+	\subsubsection{Вложенный подзапрос: степень заполнения рейсов}
+	\begin{lstlisting}[language=SQL]
+		SELECT ts.flight_id,
+		ts.flight_no,
+		ts.scheduled_departure_local,
+		ts.departure_city,
+		ts.arrival_city,
+		a.model,
+		ts.fact_passengers,
+		ts.total_seats,
+		round( ts.fact_passengers::numeric / ts.total_seats::numeric, 2 ) AS fraction
+		FROM (
+		SELECT f.flight_id,
+		f.flight_no,
+		f.scheduled_departure_local,
+		f.departure_city,
+		f.arrival_city,
+		f.aircraft_code,
+		count( tf.ticket_no ) AS fact_passengers,
+		( SELECT count( s.seat_no )
+		FROM seats s
+		WHERE s.aircraft_code = f.aircraft_code
+		) AS total_seats
+		FROM flights_v f
+		JOIN ticket_flights tf ON f.flight_id = tf.flight_id
+		WHERE f.status = 'Arrived'
+		GROUP BY 1, 2, 3, 4, 5, 6
+		) AS ts
+		JOIN aircrafts AS a ON ts.aircraft_code = a.aircraft_code
+		ORDER BY ts.scheduled_departure_local;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	28205	PG0032	2017-07-16 09:00:00.000	Пенза	Москва	Сессна 208 Караван	2	12	0.17
+	7130	PG0591	2017-07-16 09:00:00.000	Москва	Томск	Сухой Суперджет-100	25	97	0.26
+	9467	PG0360	2017-07-16 09:00:00.000	Санкт-Петербург	Оренбург	Бомбардье CRJ-200	6	50	0.12
+	6223	PG0120	2017-07-16 09:00:00.000	Москва	Мирный	Боинг 737-300	34	130	0.26
+	1764	PG0239	2017-07-16 09:05:00.000	Москва	Ханты-Мансийск	Сухой Суперджет-100	55	97	0.57
+	32948	PG0550	2017-07-16 09:05:00.000	Владикавказ	Москва	Бомбардье CRJ-200	11	50	0.22
+	3625	PG0414	2017-07-16 09:05:00.000	Москва	Мурманск	Бомбардье CRJ-200	13	50	0.26
+	9307	PG0198	2017-07-16 09:10:00.000	Санкт-Петербург	Иркутск	Аэробус A321-200	19	170	0.11
+	1452	PG0509	2017-07-16 09:15:00.000	Москва	Элиста	Сухой Суперджет-100	20	97	0.21
+	21969	PG0240	2017-07-16 09:15:00.000	Ханты-Мансийск	Москва	Сухой Суперджет-100	5	97	0.05
+	15025	PG0683	2017-07-16 09:15:00.000	Пермь	Ульяновск	Сухой Суперджет-100	32	97	0.33
+	15750	PG0244	2017-07-16 09:20:00.000	Якутск	Санкт-Петербург	Аэробус A319-100	5	116	0.04
+	2485	PG0482	2017-07-16 09:20:00.000	Москва	Кемерово	Сухой Суперджет-100	15	97	0.15
+	25029	PG0044	2017-07-16 09:20:00.000	Ижевск	Москва	Бомбардье CRJ-200	4	50	0.08
+	28883	PG0177	2017-07-16 09:25:00.000	Чебоксары	Москва	Бомбардье CRJ-200	8	50	0.16
+	17534	PG0123	2017-07-16 09:25:00.000	Нижнекамск	Ростов-на-Дону	Бомбардье CRJ-200	2	50	0.04
+	16590	PG0369	2017-07-16 09:30:00.000	Нижневартовск	Москва	Бомбардье CRJ-200	14	50	0.28
+	24836	PG0014	2017-07-16 09:30:00.000	Тюмень	Урай	Сухой Суперджет-100	41	97	0.42
+	1	PG0405	2017-07-16 09:35:00.000	Москва	Санкт-Петербург	Аэробус A321-200	79	170	0.46
+	2575	PG0029	2017-07-16 09:40:00.000	Москва	Пенза	Сессна 208 Караван	4	12	0.33
+	7072	PG0677	2017-07-16 09:40:00.000	Москва	Махачкала	Боинг 737-300	96	130	0.74
+	7364	PG0241	2017-07-16 09:40:00.000	Москва	Чебоксары	Сухой Суперджет-100	56	97	0.58
+	
+	\end{lstlisting}
+	
+	\subsubsection{Общее табличное выражение (CTE)}
+	\begin{lstlisting}[language=SQL]
+		WITH ts AS
+		(
+		SELECT f.flight_id,
+		f.flight_no,
+		f.scheduled_departure_local,
+		f.departure_city,
+		f.arrival_city,
+		f.aircraft_code,
+		count( tf.ticket_no ) AS fact_passengers,
+		( SELECT count( s.seat_no )
+		FROM seats s
+		WHERE s.aircraft_code = f.aircraft_code
+		) AS total_seats
+		FROM flights_v f
+		JOIN ticket_flights tf ON f.flight_id = tf.flight_id
+		WHERE f.status = 'Arrived'
+		GROUP BY 1, 2, 3, 4, 5, 6
+		)
+		SELECT ts.flight_id,
+		ts.flight_no,
+		ts.scheduled_departure_local,
+		ts.departure_city,
+		ts.arrival_city,
+		a.model,
+		ts.fact_passengers,
+		ts.total_seats,
+		round( ts.fact_passengers::numeric / ts.total_seats::numeric, 2 ) AS fraction
+		FROM ts
+		JOIN aircrafts AS a ON ts.aircraft_code = a.aircraft_code
+		ORDER BY ts.scheduled_departure_local;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	28205	PG0032	2017-07-16 09:00:00.000	Пенза	Москва	Сессна 208 Караван	2	12	0.17
+	7130	PG0591	2017-07-16 09:00:00.000	Москва	Томск	Сухой Суперджет-100	25	97	0.26
+	9467	PG0360	2017-07-16 09:00:00.000	Санкт-Петербург	Оренбург	Бомбардье CRJ-200	6	50	0.12
+	6223	PG0120	2017-07-16 09:00:00.000	Москва	Мирный	Боинг 737-300	34	130	0.26
+	1764	PG0239	2017-07-16 09:05:00.000	Москва	Ханты-Мансийск	Сухой Суперджет-100	55	97	0.57
+	32948	PG0550	2017-07-16 09:05:00.000	Владикавказ	Москва	Бомбардье CRJ-200	11	50	0.22
+	3625	PG0414	2017-07-16 09:05:00.000	Москва	Мурманск	Бомбардье CRJ-200	13	50	0.26
+	9307	PG0198	2017-07-16 09:10:00.000	Санкт-Петербург	Иркутск	Аэробус A321-200	19	170	0.11
+	1452	PG0509	2017-07-16 09:15:00.000	Москва	Элиста	Сухой Суперджет-100	20	97	0.21
+	21969	PG0240	2017-07-16 09:15:00.000	Ханты-Мансийск	Москва	Сухой Суперджет-100	5	97	0.05
+	15025	PG0683	2017-07-16 09:15:00.000	Пермь	Ульяновск	Сухой Суперджет-100	32	97	0.33
+	
+	\end{lstlisting}
+	
+	% ============================================================
+	% 3. КОНТРОЛЬНЫЕ ВОПРОСЫ И ЗАДАНИЯ (РАЗДЕЛ 4)
+	% ============================================================
+	\section{Контрольные вопросы и задания (Раздел 4)}
+	
+	\subsection{Задание 1. Особенности обработки пробелов в операторе LIKE}
+	Команды для сравнения:
+	\begin{lstlisting}[language=SQL]
+		SELECT count( * ) FROM tickets;
+		SELECT count( * ) FROM tickets WHERE passenger_name LIKE '% %';
+		SELECT count( * ) FROM tickets WHERE passenger_name LIKE '% % %';
+		SELECT count( * ) FROM tickets WHERE passenger_name LIKE '% %%';
+	\end{lstlisting}
+	
+	Результаты выполнения запросов:
+	\begin{lstlisting}
+		-- Результат 1 (count(*) FROM tickets):
+		366733
+		
+		-- Результат 2 (LIKE '% %'):
+		366733
+		
+		-- Результат 3 (LIKE '% % %'):
+		0
+		
+		-- Результат 4 (LIKE '% %%'):
+		366733
+	\end{lstlisting}
+	
+	\textbf{Анализ:} Символ пробела не является спецсимволом \texttt{LIKE} и сопоставляется буквально. Шаблон \texttt{'\% \%'} находит строки с хотя бы одним пробелом; \texttt{'\% \% \%'} --- строки, содержащие не менее двух пробелов; \texttt{'\% \%\%'} полностью эквивалентен \texttt{'\% \%'}.
+	
+	% ------------------------------------------------------------
+	\subsection{Задание 2. Поиск пассажиров с фамилиями из пяти букв}
+	Запрос:
+	\begin{lstlisting}[language=SQL]
 		SELECT passenger_name
 		FROM tickets
 		WHERE passenger_name LIKE '% _____';
 	\end{lstlisting}
-	
-	\subsection{Задание 6. Маршруты на самолетах Boeing}
-	Запрос для поиска маршрутов, обслуживаемых самолетами Boeing, с выводом наименования модели:
+	Результат выполнения:
 	\begin{lstlisting}
-		SELECT DISTINCT
-		r.departure_city,
-		r.arrival_city,
-		a.model
-		FROM routes r
-		JOIN aircrafts a ON r.aircraft_code = a.aircraft_code
-		WHERE a.model LIKE 'Boeing%';
+		ALI GORBUNOV
+		LEV KUZNECOV
+		EVA SOKOLOVA
+		LEV MOROZOV
+		EVA PETROVA
+		LEV FEDOROV
+		
 	\end{lstlisting}
 	
-	\subsection{Задание 7. Города, между которыми летают Boeing 777-300}
-	Запрос для вывода уникальных пар городов:
+	% ------------------------------------------------------------
+	\subsection{Задание 3. Оператор SIMILAR TO (п. 9.7.2)}
+	Запрос с использованием оператора стандарта SQL \texttt{SIMILAR TO} (выбор воздушных судов Boeing семейств 737 или 777):
+	\begin{lstlisting}[language=SQL]
+		SELECT model, range 
+		FROM aircrafts 
+		WHERE model SIMILAR TO '%(737|777)%';
+	\end{lstlisting}
+	Результат выполнения:
 	\begin{lstlisting}
-		SELECT DISTINCT
-		LEAST(r.departure_city, r.arrival_city) AS city1,
-		GREATEST(r.departure_city, r.arrival_city) AS city2
-		FROM routes r
-		JOIN aircrafts a ON r.aircraft_code = a.aircraft_code
-		WHERE a.model = 'Boeing 777-300';
+	Боинг 777-300	11100
+	Боинг 737-300	4200
+	
 	\end{lstlisting}
 	
-	\subsection{Задание 8. Количество рейсов из Москвы в Санкт-Петербург}
+	% ------------------------------------------------------------
+	\subsection{Задание 4. Предикаты сравнения (п. 9.2)}
+	Использование предиката \texttt{IS NULL} для отбора рейсов без фактического вылета:
+	\begin{lstlisting}[language=SQL]
+		SELECT flight_id, flight_no, status, actual_departure
+		FROM flights
+		WHERE actual_departure IS NULL
+		LIMIT 5;
+	\end{lstlisting}
+	Результат выполнения:
 	\begin{lstlisting}
-		SELECT departure_city, arrival_city, count(*) AS count
+	1185	PG0134	Scheduled	
+	3979	PG0052	Scheduled	
+	4739	PG0561	Scheduled	
+	5502	PG0529	Scheduled	
+	6938	PG0461	Scheduled	
+	\end{lstlisting}
+	
+	% ------------------------------------------------------------
+	\subsection{Задание 5. Условные выражения (п. 9.17)}
+	Использование функции \texttt{COALESCE} для подстановки планового времени при отсутствии фактического:
+	\begin{lstlisting}[language=SQL]
+		SELECT flight_no,
+		status,
+		COALESCE(actual_departure, scheduled_departure) AS dep_time
+		FROM flights
+		LIMIT 5;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	PG0134	Scheduled	2017-09-10 09:50:00.000 +0300
+	PG0052	Scheduled	2017-08-25 14:50:00.000 +0300
+	PG0561	Scheduled	2017-09-05 12:30:00.000 +0300
+	PG0529	Scheduled	2017-09-12 09:50:00.000 +0300
+	PG0461	Scheduled	2017-09-04 12:25:00.000 +0300
+	
+	\end{lstlisting}
+	
+	% ------------------------------------------------------------
+	\subsection{Задание 6. Маршруты самолетов компании Boeing}
+	Запрос:
+	\begin{lstlisting}[language=SQL]
+		SELECT DISTINCT r.flight_no, r.departure_city, r.arrival_city, a.model
+		FROM routes r
+		JOIN aircrafts a ON r.aircraft_code = a.aircraft_code
+		WHERE a.model LIKE 'Boeing%'
+		ORDER BY r.flight_no;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+		PG0001	Усть-Илимск	Сургут	Бомбардье CRJ-200
+		PG0002	Сургут	Усть-Илимск	Бомбардье CRJ-200
+		PG0003	Иваново	Сочи	Бомбардье CRJ-200
+		PG0004	Сочи	Иваново	Бомбардье CRJ-200
+		PG0011	Ярославль	Томск	Бомбардье CRJ-200
+		PG0012	Геленджик	Москва	Бомбардье CRJ-200
+		PG0015	Москва	Воркута	Бомбардье CRJ-200
+		
+	\end{lstlisting}
+	
+	% ------------------------------------------------------------
+	\subsection{Задание 7. Пары городов для Boeing 777-300 без дублирования}
+	Запрос:
+	\begin{lstlisting}[language=SQL]
+		SELECT DISTINCT 
+		LEAST(r.departure_city, r.arrival_city) AS city_1,
+		GREATEST(r.departure_city, r.arrival_city) AS city_2
+		FROM routes r
+		JOIN aircrafts a ON r.aircraft_code = a.aircraft_code
+		WHERE a.model = 'Boeing 777-300'
+		ORDER BY city_1, city_2;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	Абакан	Архангельск
+	Абакан	Грозный
+	Абакан	Кызыл
+	Абакан	Москва
+	Абакан	Новосибирск
+	
+	\end{lstlisting}
+	
+	% ------------------------------------------------------------
+	\subsection{Задание 8. Рейсы из Москвы в Санкт-Петербург}
+	Запрос:
+	\begin{lstlisting}[language=SQL]
+		SELECT departure_city, arrival_city, count(*)
 		FROM routes
 		WHERE departure_city = 'Москва' AND arrival_city = 'Санкт-Петербург'
 		GROUP BY departure_city, arrival_city;
 	\end{lstlisting}
-	
-	\subsection{Задание 10. Количество направлений из каждого города}
+	Результат выполнения:
 	\begin{lstlisting}
-		SELECT departure_city, count(DISTINCT arrival_city) AS num_directions
-		FROM routes
-		GROUP BY departure_city
-		ORDER BY num_directions DESC;
+	Москва 	Санкт-Петербург	12
 	\end{lstlisting}
 	
-	\subsection{Задание 11. Топ-5 городов по числу ежедневных рейсов из Москвы}
+	% ------------------------------------------------------------
+	\subsection{Задание 9. Количество маршрутов из каждого города}
+	Запрос из задания:
+	\begin{lstlisting}[language=SQL]
+		SELECT departure_city, count( * )
+		FROM routes
+		GROUP BY departure_city
+		ORDER BY count DESC;
+	\end{lstlisting}
+	Результат выполнения:
 	\begin{lstlisting}
+		Москва	154
+		Санкт-Петербург	35
+		Новосибирск	19
+		Екатеринбург	15
+		Сочи	14
+		Ростов-на-Дону	14
+		Красноярск	13
+		
+	\end{lstlisting}
+	
+	% ------------------------------------------------------------
+	\subsection{Задание 10. Число направлений полетов из каждого города}
+	Запрос:
+	\begin{lstlisting}[language=SQL]
+		SELECT departure_city, count(DISTINCT arrival_city) AS count
+		FROM routes
+		GROUP BY departure_city
+		ORDER BY count DESC;
+	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	Москва	80
+	Санкт-Петербург	22
+	Новосибирск	14
+	Екатеринбург	13
+	Сочи	11
+	Ростов-на-Дону	10
+	Красноярск	10
+	
+	\end{lstlisting}
+	
+	% ------------------------------------------------------------
+	\subsection{Задание 11. Топ-5 городов по числу ежедневных рейсов из Москвы}
+	Запрос:
+	\begin{lstlisting}[language=SQL]
 		SELECT arrival_city, count(*) AS daily_routes_count
 		FROM routes
 		WHERE departure_city = 'Москва' 
@@ -109,33 +862,69 @@
 		ORDER BY daily_routes_count DESC
 		LIMIT 5;
 	\end{lstlisting}
-	
-	\subsection{Задание 12*. Число рейсов из Москвы по дням недели}
+	Результат выполнения:
 	\begin{lstlisting}
-		SELECT 
-		unnested_day AS day_of_week,
-		count(*) AS flights_count
-		FROM routes,
-		unnest(days_of_week) AS unnested_day
-		WHERE departure_city = 'Москва'
-		GROUP BY unnested_day
-		ORDER BY unnested_day;
+	Санкт-Петербург	12
+	Брянск	9
+	Ульяновск	5
+	Петрозаводск	4
+	Йошкар-Ола	4
+	
 	\end{lstlisting}
 	
-	\subsection{Задание 13. Максимальные и минимальные цены билетов}
+	% ------------------------------------------------------------
+	\subsection{Задание 12*. Количество рейсов из Москвы по дням недели}
+	Запрос:
+	\begin{lstlisting}[language=SQL]
+		SELECT unnest(days_of_week) AS day_of_week,
+		count(*) AS num_flights
+		FROM routes
+		WHERE departure_city = 'Москва'
+		GROUP BY day_of_week
+		ORDER BY day_of_week;
+	\end{lstlisting}
+	Результат выполнения:
 	\begin{lstlisting}
-		SELECT 
-		f.departure_city,
+	1	127
+	2	135
+	3	124
+	4	133
+	5	124
+	6	131
+	7	134
+	
+	\end{lstlisting}
+	
+	% ------------------------------------------------------------
+	\subsection{Задание 13. Максимальные и минимальные цены билетов}
+	Запрос:
+	\begin{lstlisting}[language=SQL]
+		SELECT f.departure_city,
 		f.arrival_city,
-		max(tf.amount) AS max_price,
-		min(tf.amount) AS min_price
+		max(tf.amount) AS max_amount,
+		min(tf.amount) AS min_amount
 		FROM flights_v f
 		JOIN ticket_flights tf ON f.flight_id = tf.flight_id
 		GROUP BY f.departure_city, f.arrival_city
 		ORDER BY f.departure_city, f.arrival_city;
 	\end{lstlisting}
+	Результат выполнения:
+	\begin{lstlisting}
+	Абакан	Москва	101000.00	33700.00
+	Абакан	Новосибирск	5800.00	5800.00
+	Абакан	Томск	4900.00	4900.00
+	Анадырь	Москва	185300.00	61800.00
+	Анадырь	Хабаровск	92200.00	30700.00
+	Анапа	Белгород	18900.00	6300.00
+	Анапа	Москва	36600.00	12200.00
 	
+	\end{lstlisting}
+	
+	% ============================================================
+	% 4. ВЫВОДЫ
+	% ============================================================
 	\section{Выводы}
-	В ходе выполнения лабораторной работы были освоены механизмы составления сложных SQL-запросов SELECT в СУБД PostgreSQL, научились применять различные типы соединений (JOIN), агрегатные функции, условные конструкции, работу с массивами и представление данных.
+	
+	В ходе выполнения лабораторной работы были изучены средства выборки данных \texttt{SELECT} в PostgreSQL. Были практически освоены механизмы поиска по шаблонам (\texttt{LIKE}, POSIX регулярные выражения, \texttt{SIMILAR TO}), соединение нескольких таблиц и представлений (\texttt{JOIN}, \texttt{LEFT JOIN}), вычисление агрегатов с группировкой и фильтрацией (\texttt{GROUP BY}, \texttt{HAVING}), оконные функции (\texttt{OVER (PARTITION BY ...)}), работа со столбцами-массивами (\texttt{array\_length}, \texttt{unnest}), а также декомпозиция сложных запросов с помощью подзапросов и CTE.
 	
 \end{document}
